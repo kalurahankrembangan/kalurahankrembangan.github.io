@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Berita Lelayu</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="container">
+
+    <h1>BERITA LELAYU ONLINE</h1>
+
+    <canvas id="pieChart"></canvas>
+
+    <div class="stats-box">
+        <div class="stat">
+            <h3>Minggu Ini</h3>
+            <p id="weekTotal">0</p>
+        </div>
+        <div class="stat">
+            <h3>Bulan Ini</h3>
+            <p id="monthTotal">0</p>
+        </div>
+    </div>
+
+    <div class="menu-buttons">
+        <a href="input.html" class="btn">➕ Input Data</a>
+        <a href="downloads.html" class="btn">📄 Download PDF</a>
+    </div>
+
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

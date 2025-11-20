@@ -1,0 +1,123 @@
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDNk490l2YMUHV54Y_HsGkkiQWxr5KvC7w",
+  authDomain: "berita-lelayu-online.firebaseapp.com",
+  projectId: "berita-lelayu-online",
+  storageBucket: "berita-lelayu-online.firebasestorage.app",
+  messagingSenderId: "977984787298",
+  appId: "1:977984787298:web:5e173c586718fee5c4d23b",
+  measurementId: "G-9KTHZJBP73"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Event listener untuk dropdown makam
+document.getElementById('makam').addEventListener('change', function() {
+    const makamLainnyaInput = document.getElementById('makam_lainnya');
+    
+    if (this.value === 'Lainnya') {
+        makamLainnyaInput.style.display = 'block';
+        makamLainnyaInput.required = true;
+    } else {
+        makamLainnyaInput.style.display = 'none';
+        makamLainnyaInput.required = false;
+        makamLainnyaInput.value = ''; // Clear value ketika tidak dipilih
+    }
+});
+
+// Tambah orang berduka
+let berdukaCount = 0;
+document.getElementById('addBerduka').addEventListener('click', function() {
+    berdukaCount++;
+    const div = document.createElement('div');
+    div.className = 'berduka-item';
+    div.innerHTML = `
+        <label>Nama Berduka ${berdukaCount}:</label>
+        <input type="text" class="nama_berduka" placeholder="Nama orang berduka">
+        <label>Hubungan:</label>
+        <input type="text" class="hubungan_berduka" placeholder="Hubungan dengan almarhum">
+        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">Hapus</button>
+    `;
+    document.getElementById('berdukaList').appendChild(div);
+});
+
+// Handle form submission
+document.getElementById('lelayuForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const statusEl = document.getElementById('status');
+    
+    try {
+        submitBtn.disabled = true;
+        statusEl.textContent = 'Mengirim data...';
+        statusEl.style.color = 'blue';
+
+        // Collect berduka data
+        const berdukaData = [];
+        document.querySelectorAll('.berduka-item').forEach(item => {
+            const nama = item.querySelector('.nama_berduka').value;
+            const hubungan = item.querySelector('.hubungan_berduka').value;
+            if (nama && hubungan) {
+                berdukaData.push({ nama, hubungan });
+            }
+        });
+
+        // Handle makam value
+        let makamValue = document.getElementById('makam').value;
+        if (makamValue === 'Lainnya') {
+            makamValue = document.getElementById('makam_lainnya').value || 'Lainnya';
+        }
+
+        // Prepare data for Firestore
+        const formData = {
+            nama_almarhum: document.getElementById('nama_almarhum').value,
+            usia: parseInt(document.getElementById('usia').value),
+            padukuhan: document.getElementById('padukuhan').value,
+            hari_mati: document.getElementById('hari_mati').value,
+            tgl_mati: document.getElementById('tgl_mati').value,
+            jam_mati: document.getElementById('jam_mati').value,
+            hari_kubur: document.getElementById('hari_kubur').value,
+            tgl_kubur: document.getElementById('tgl_kubur').value,
+            jam_kubur: document.getElementById('jam_kubur').value,
+            makam: makamValue,
+            berduka: berdukaData,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Validate required fields
+        if (!formData.nama_almarhum || !formData.usia || !formData.padukuhan || !formData.tgl_mati) {
+            throw new Error('Harap isi semua field yang wajib diisi');
+        }
+
+        // Save to Firestore
+        const docRef = await db.collection('lelayu').add(formData);
+        
+        statusEl.textContent = 'Data berhasil disimpan! ID: ' + docRef.id;
+        statusEl.style.color = 'green';
+        
+        // Reset form
+        this.reset();
+        document.getElementById('berdukaList').innerHTML = '';
+        berdukaCount = 0;
+        document.getElementById('makam_lainnya').style.display = 'none';
+        
+        // TODO: Generate PDF here
+        // generatePDF(formData);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        statusEl.textContent = 'Error: ' + error.message;
+        statusEl.style.color = 'red';
+    } finally {
+        submitBtn.disabled = false;
+    }
+});
+
+// Initialize form state
+document.addEventListener('DOMContentLoaded', function() {
+    // Pastikan input makam_lainnya hidden di awal
+    document.getElementById('makam_lainnya').style.display = 'none';
+});
