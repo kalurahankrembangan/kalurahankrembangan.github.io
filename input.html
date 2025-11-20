@@ -1,123 +1,76 @@
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyDNk490l2YMUHV54Y_HsGkkiQWxr5KvC7w",
-  authDomain: "berita-lelayu-online.firebaseapp.com",
-  projectId: "berita-lelayu-online",
-  storageBucket: "berita-lelayu-online.firebasestorage.app",
-  messagingSenderId: "977984787298",
-  appId: "1:977984787298:web:5e173c586718fee5c4d23b",
-  measurementId: "G-9KTHZJBP73"
-};
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Input Berita Lelayu</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+<body>
+<div class="container">
+<h1>Input Data Lelayu</h1>
 
-// Event listener untuk dropdown makam
-document.getElementById('makam').addEventListener('change', function() {
-    const makamLainnyaInput = document.getElementById('makam_lainnya');
-    
-    if (this.value === 'Lainnya') {
-        makamLainnyaInput.style.display = 'block';
-        makamLainnyaInput.required = true;
-    } else {
-        makamLainnyaInput.style.display = 'none';
-        makamLainnyaInput.required = false;
-        makamLainnyaInput.value = ''; // Clear value ketika tidak dipilih
-    }
-});
+<div class="form-container">
+<form id="lelayuForm">
 
-// Tambah orang berduka
-let berdukaCount = 0;
-document.getElementById('addBerduka').addEventListener('click', function() {
-    berdukaCount++;
-    const div = document.createElement('div');
-    div.className = 'berduka-item';
-    div.innerHTML = `
-        <label>Nama Berduka ${berdukaCount}:</label>
-        <input type="text" class="nama_berduka" placeholder="Nama orang berduka">
-        <label>Hubungan:</label>
-        <input type="text" class="hubungan_berduka" placeholder="Hubungan dengan almarhum">
-        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">Hapus</button>
-    `;
-    document.getElementById('berdukaList').appendChild(div);
-});
+<label>Nama Almarhum:</label>
+<input type="text" id="nama_almarhum">
 
-// Handle form submission
-document.getElementById('lelayuForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const statusEl = document.getElementById('status');
-    
-    try {
-        submitBtn.disabled = true;
-        statusEl.textContent = 'Mengirim data...';
-        statusEl.style.color = 'blue';
+<label>Usia:</label>
+<input type="number" id="usia">
 
-        // Collect berduka data
-        const berdukaData = [];
-        document.querySelectorAll('.berduka-item').forEach(item => {
-            const nama = item.querySelector('.nama_berduka').value;
-            const hubungan = item.querySelector('.hubungan_berduka').value;
-            if (nama && hubungan) {
-                berdukaData.push({ nama, hubungan });
-            }
-        });
+<label>Padukuhan:</label>
+<input type="text" id="padukuhan">
 
-        // Handle makam value
-        let makamValue = document.getElementById('makam').value;
-        if (makamValue === 'Lainnya') {
-            makamValue = document.getElementById('makam_lainnya').value || 'Lainnya';
-        }
+<label>Hari Meninggal:</label>
+<input type="text" id="hari_mati">
 
-        // Prepare data for Firestore
-        const formData = {
-            nama_almarhum: document.getElementById('nama_almarhum').value,
-            usia: parseInt(document.getElementById('usia').value),
-            padukuhan: document.getElementById('padukuhan').value,
-            hari_mati: document.getElementById('hari_mati').value,
-            tgl_mati: document.getElementById('tgl_mati').value,
-            jam_mati: document.getElementById('jam_mati').value,
-            hari_kubur: document.getElementById('hari_kubur').value,
-            tgl_kubur: document.getElementById('tgl_kubur').value,
-            jam_kubur: document.getElementById('jam_kubur').value,
-            makam: makamValue,
-            berduka: berdukaData,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        };
+<label>Tanggal Meninggal:</label>
+<input type="date" id="tgl_mati">
 
-        // Validate required fields
-        if (!formData.nama_almarhum || !formData.usia || !formData.padukuhan || !formData.tgl_mati) {
-            throw new Error('Harap isi semua field yang wajib diisi');
-        }
+<label>Jam Meninggal:</label>
+<input type="text" id="jam_mati">
 
-        // Save to Firestore
-        const docRef = await db.collection('lelayu').add(formData);
-        
-        statusEl.textContent = 'Data berhasil disimpan! ID: ' + docRef.id;
-        statusEl.style.color = 'green';
-        
-        // Reset form
-        this.reset();
-        document.getElementById('berdukaList').innerHTML = '';
-        berdukaCount = 0;
-        document.getElementById('makam_lainnya').style.display = 'none';
-        
-        // TODO: Generate PDF here
-        // generatePDF(formData);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        statusEl.textContent = 'Error: ' + error.message;
-        statusEl.style.color = 'red';
-    } finally {
-        submitBtn.disabled = false;
-    }
-});
+<label>Hari Pemakaman:</label>
+<input type="text" id="hari_kubur">
 
-// Initialize form state
-document.addEventListener('DOMContentLoaded', function() {
-    // Pastikan input makam_lainnya hidden di awal
-    document.getElementById('makam_lainnya').style.display = 'none';
-});
+<label>Tanggal Pemakaman:</label>
+<input type="date" id="tgl_kubur">
+
+<label>Jam Pemakaman:</label>
+<input type="text" id="jam_kubur">
+
+<label>Makam:</label>
+<select id="makam">
+    <option value="Randu Kuning">Randu Kuning</option>
+    <option value="Krembangan Wetan">Krembangan Wetan</option>
+    <option value="Krembangan Kulon">Krembangan Kulon</option>
+    <option value="Kebon">Kebon</option>
+    <option value="Nosari">Nosari</option>
+    <option value="Clumprit">Clumprit</option>
+    <option value="Jelok">Jelok</option>
+    <option value="Dampit">Dampit</option>
+    <option value="Mawung">Mawung</option>
+    <option value="Lainnya">Lainnya</option>
+</select>
+
+<input type="text" id="makam_lainnya" placeholder="Isi makam manual" style="display:none;">
+
+<h3>Yang Berduka</h3>
+<div id="berdukaList"></div>
+
+<div class="add-btn" id="addBerduka">+ Tambah Orang Berduka</div>
+
+<button type="submit" class="btn">Kirim & Generate PDF</button>
+
+</form>
+
+<p id="status"></p>
+</div>
+</div>
+
+<script src="input.js"></script>
+</body>
+</html>
